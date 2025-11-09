@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "ml-service-homework1"
+version = "0.1.0"
+description = "ML API with REST"
+authors = ["Kovalenok I. <ivan2002kov@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.115.0"
+uvicorn = "^0.30.0"
+scikit-learn = "^1.5.2"
+pandas = "^2.2.2"
+pydantic = "^2.7.0"
+loguru = "^0.7.2"
+pyjwt = "^2.9.0"
+streamlit = "^1.40.0"
+grpcio = "^1.62.0"
+grpcio-tools = "^1.62.0"
+requests = "^2.31.0"
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.6.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

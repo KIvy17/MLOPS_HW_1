@@ -1,0 +1,164 @@
+{
+  "info": {
+    "name": "ML Service Homework 1",
+    "_postman_id": "b2a6c3b6-1111-2222-3333-abcdefabcdef",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8000/health",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "health"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Token",
+      "request": {
+        "method": "POST",
+        "url": {
+          "raw": "http://localhost:8000/token?username=admin&password=password",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "token"
+          ],
+          "query": [
+            {
+              "key": "username",
+              "value": "admin"
+            },
+            {
+              "key": "password",
+              "value": "password"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Models",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer <TOKEN>"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/models",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "models"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Train",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer <TOKEN>"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/train",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "train"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"model_type\": \"LogisticRegression\", \"X\": [[1, 2], [2, 3], [3, 4]], \"y\": [0, 1, 0]}"
+        }
+      }
+    },
+    {
+      "name": "Predict",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer <TOKEN>"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/predict/<MODEL_ID>",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "predict",
+            "<MODEL_ID>"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"X\": [[2, 3], [3, 5]]}"
+        }
+      }
+    },
+    {
+      "name": "Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer <TOKEN>"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/delete/<MODEL_ID>",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "delete",
+            "<MODEL_ID>"
+          ]
+        }
+      }
+    }
+  ]
+}
