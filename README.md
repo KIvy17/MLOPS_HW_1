@@ -1,28 +1,32 @@
 # ML Service Homework 1
 
-REST API for ML models management with JWT authentication.
+REST API для управления ML-моделями с JWT аутентификацией.
 
-## Team Members
+## Состав группы
 
-* Kovalenok I.
-* Astashkin A.
+* Ковалёнок И.
+* Асташкин А.
 
-## Description
+## Описание
 
-REST API service for training and using ML models (LogisticRegression, RandomForestClassifier) with JWT token authentication.
+REST API сервис для обучения и использования ML-моделей (LogisticRegression, RandomForestClassifier) с защитой эндпоинтов через JWT токены.
 
-## Requirements
+## Требования
 
 - Python 3.10+
 - pip
 
-## Installation
+## Установка и запуск
 
+### Шаг 1: Клонирование
 ```bash
 git clone https://github.com/KIvy17/MLOPS_HW_1.git
 cd MLOPS_HW_1
 git checkout dev
+```
 
+### Шаг 2: Установка зависимостей
+```bash
 python -m venv venv
 # Windows:
 venv\Scripts\activate
@@ -32,30 +36,29 @@ source venv/bin/activate
 pip install fastapi uvicorn scikit-learn pandas pydantic loguru pyjwt
 ```
 
-## Run
-
+### Шаг 3: Запуск
 ```bash
 uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-## Check
+## Проверка
 
 ```bash
 curl http://127.0.0.1:8000/health
 ```
 
-Swagger docs: http://127.0.0.1:8000/docs
+Swagger документация: http://127.0.0.1:8000/docs
 
-## JWT Authentication
+## JWT Аутентификация
 
-All endpoints (except `/health` and `/token`) require JWT token.
+Все эндпоинты (кроме `/health` и `/token`) требуют JWT токен.
 
-### Get token:
+### Получение токена:
 ```bash
 curl -X POST "http://127.0.0.1:8000/token?username=admin&password=password"
 ```
 
-Response:
+Ответ:
 ```json
 {
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -63,33 +66,33 @@ Response:
 }
 ```
 
-### Use token:
+### Использование токена:
 ```bash
 curl -H "Authorization: Bearer YOUR_TOKEN" http://127.0.0.1:8000/models
 ```
 
-## API Endpoints
+## API Эндпоинты
 
-- `GET /health` - check service status (no token required)
-- `POST /token` - get JWT token (no token required)
-- `GET /models` - list available models (token required)
-- `POST /train` - train model (token required)
-- `POST /predict/{model_id}` - make prediction (token required)
-- `DELETE /delete/{model_id}` - delete model (token required)
+- `GET /health` - проверка статуса сервиса (без токена)
+- `POST /token` - получение JWT токена (без токена)
+- `GET /models` - список доступных моделей (требует токен)
+- `POST /train` - обучение модели (требует токен)
+- `POST /predict/{model_id}` - предсказание (требует токен)
+- `DELETE /delete/{model_id}` - удаление модели (требует токен)
 
-## Usage Examples
+## Примеры использования
 
-### 1. Get token
+### 1. Получить токен
 ```bash
 curl -X POST "http://127.0.0.1:8000/token?username=admin&password=password"
 ```
 
-### 2. List models
+### 2. Список моделей
 ```bash
 curl -H "Authorization: Bearer YOUR_TOKEN" http://127.0.0.1:8000/models
 ```
 
-### 3. Train model
+### 3. Обучить модель
 ```bash
 curl -X POST http://127.0.0.1:8000/train \
   -H "Authorization: Bearer YOUR_TOKEN" \
@@ -97,7 +100,7 @@ curl -X POST http://127.0.0.1:8000/train \
   -d @data_examples/train_example.json
 ```
 
-### 4. Predict
+### 4. Предсказание
 ```bash
 curl -X POST http://127.0.0.1:8000/predict/MODEL_ID \
   -H "Authorization: Bearer YOUR_TOKEN" \
@@ -105,24 +108,31 @@ curl -X POST http://127.0.0.1:8000/predict/MODEL_ID \
   -d @data_examples/predict_example.json
 ```
 
-## Data Examples
+## Примеры данных
 
-Example JSON files for training and prediction are in `data_examples/` folder.
+В папке `data_examples/` находятся примеры JSON для обучения и предсказания.
 
-## Project Structure
+## TODO: gRPC сервис
+
+## TODO: Streamlit Dashboard
+
+## TODO: Docker
+
+## Структура проекта
 
 ```
 ├── app/
-│   ├── main.py              # FastAPI application with JWT
-│   ├── auth.py              # JWT authentication
-│   ├── models_manager.py    # ML models manager
-│   ├── logger.py            # Logging
-│   └── schemas.py           # Pydantic schemas
-├── data_examples/           # Example data
-└── pyproject.toml           # Dependencies
+│   ├── main.py              # FastAPI приложение с JWT
+│   ├── auth.py              # JWT аутентификация
+│   ├── models_manager.py    # Менеджер ML моделей
+│   ├── logger.py            # Логирование
+│   └── schemas.py           # Pydantic схемы
+├── data_examples/           # Примеры данных
+└── pyproject.toml           # Зависимости
 ```
 
-## Note
+## Примечание
 
-Current version includes basic REST API and JWT authentication (Kovalenok I.). 
-Additional components (gRPC, Streamlit, Docker) will be added in next commits.
+Текущая версия включает базовый REST API и JWT аутентификацию (Ковалёнок И.). 
+Дополнительные компоненты (gRPC, Streamlit, Docker) будут добавлены в следующих коммитах.
+
