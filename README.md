@@ -112,11 +112,21 @@ curl -X POST http://127.0.0.1:8000/predict/MODEL_ID \
 
 В папке `data_examples/` находятся примеры JSON для обучения и предсказания.
 
-## TODO: gRPC сервис
+# Streamlit
+streamlit run app/dashboard/app.py
+## gRPC
+1) Сгенерировать Python-код из .proto (один раз):
+python -m grpc_tools.protoc -I app/grpc_service       --python_out=app/grpc_service       --grpc_python_out=app/grpc_service       app/grpc_service/model_service.proto
+2) Запустить сервер:
+python -m app.grpc_service.server
+3) Клиент (пример):
+python -m app.grpc_service.client
+## Docker
+docker-compose up --build
+Доступ:
+- API: http://localhost:8000/health
+- Dashboard: http://localhost:8501
 
-## TODO: Streamlit Dashboard
-
-## TODO: Docker
 
 ## Структура проекта
 
@@ -134,5 +144,5 @@ curl -X POST http://127.0.0.1:8000/predict/MODEL_ID \
 ## Примечание
 
 Текущая версия включает базовый REST API и JWT аутентификацию (Ковалёнок И.). 
-Дополнительные компоненты (gRPC, Streamlit, Docker) будут добавлены в следующих коммитах.
+Дополнительные компоненты (gRPC, Streamlit, Docker) добавлены (Асташикн А.)
 
