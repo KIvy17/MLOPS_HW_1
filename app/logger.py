@@ -1,12 +1,12 @@
-from loguru import logger
-import sys
 
-LOG_FILE = "service.log"
-
-logger.remove()
-logger.add(sys.stdout, level="INFO", format="{time} {level} {message}")
-logger.add(LOG_FILE, rotation="1 week", level="INFO", format="{time} {level} {message}")
+import logging
 
 def get_logger():
-    """Возвращает настроенный logger."""
+    logger=logging.getLogger("app")
+    if not logger.handlers:
+        handler=logging.StreamHandler()
+        fmt=logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+        handler.setFormatter(fmt)
+        logger.addHandler(handler)
+        logger.setLevel(logging.INFO)
     return logger
