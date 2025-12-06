@@ -1,9 +1,13 @@
+
 import pickle
-import os
 import uuid
+from typing import List, Any
+
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
+
 from app.logger import get_logger
+from app.config import settings, ensure_model_dir
 
 logger = get_logger()
 
@@ -12,40 +16,48 @@ AVAILABLE_MODELS = {
     "RandomForestClassifier": RandomForestClassifier,
 }
 
-MODEL_DIR = "models"
-os.makedirs(MODEL_DIR, exist_ok=True)
+def train_model(train: List[List[float]], target: List[int], model_type: str) -> str:
+    ensure_model_dir()
 
-def list_available_models():
-    """Возвращает названия моделей, которые можно обучить."""
-    return list(AVAILABLE_MODELS.keys())
-
-def train_model(model_type, X, y, params):
-    """Обучает модель и сохраняет в файл. Возвращает UUID модели."""
     if model_type not in AVAILABLE_MODELS:
-        raise ValueError("Неизвестный тип модели")
-    model = AVAILABLE_MODELS[model_type](**params)
-    model.fit(X, y)
+        raise ValueError("Unknown model type")
+
+    model = AVAILABLE_MODELS[model_type]()
+    model.fit(train, target)
+
     model_id = str(uuid.uuid4())
-    with open(f"{MODEL_DIR}/{model_id}.pkl", "wb") as f:
+    path = f"{settings.MODELS_DIR}/{model_id}.pkl"
+
+    with open(path, "wb") as f:
         pickle.dump(model, f)
-    logger.info(f"Модель {model_type} обучена и сохранена, id={model_id}")
+
+    logger.info(f"Model saved: {model_id}")
     return model_id
 
-def predict(model_id, X):
-    """Загружает модель и делает предсказания."""
-    path = f"{MODEL_DIR}/{model_id}.pkl"
-    if not os.path.exists(path):
-        raise ValueError("Модель не найдена")
-    with open(path, "rb") as f:
-        model = pickle.load(f)
-    preds = model.predict(X)
-    return preds.tolist()
+def list_trained_models() -> List[str]:
+    import os
+    ensure_model_dir()
+    return [f.split(".")[0] for f in os.listdir(settings.MODELS_DIR) if f.endswith(".pkl")]
 
-def delete_model(model_id):
-    """Удаляет файл модели. Возвращает True если удалено, False если не найдено."""
-    path = f"{MODEL_DIR}/{model_id}.pkl"
-    if os.path.exists(path):
+def predict(model_id: str, data: List[List[float]]) -> List[Any]:
+    ensure_model_dir()
+    path = f"{settings.MODELS_DIR}/{model_id}.pkl"
+
+    try:
+        with open(path, "rb") as f:
+            model = pickle.load(f)
+    except FileNotFoundError:
+        raise ValueError("Model not found")
+
+    return model.predict(data).tolist()
+
+def delete_model(model_id: str) -> bool:
+    import os
+    ensure_model_dir()
+    path = f"{settings.MODELS_DIR}/{model_id}.pkl"
+    try:
         os.remove(path)
-        logger.info(f"Модель {model_id} удалена")
+        logger.info(f"Model deleted: {model_id}")
         return True
-    return False
+    except FileNotFoundError:
+        return False
