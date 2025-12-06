@@ -1,26 +1,28 @@
+
 [tool.poetry]
-name = "ml-service-homework1"
+name = "mlops_hw_fixed"
 version = "0.1.0"
-description = "ML API with REST"
-authors = ["Kovalenok I. <ivan2002kov@gmail.com>"]
+description = "Fixed ML service"
+authors = ["You"]
+package-mode = false
+
 
 [tool.poetry.dependencies]
 python = "^3.10"
 fastapi = "^0.115.0"
 uvicorn = "^0.30.0"
-scikit-learn = "^1.5.2"
-pandas = "^2.2.2"
+scikit-learn = "^1.4.0"
 pydantic = "^2.7.0"
-loguru = "^0.7.2"
-pyjwt = "^2.9.0"
-streamlit = "^1.40.0"
-grpcio = "^1.62.0"
-grpcio-tools = "^1.62.0"
-requests = "^2.31.0"
+pydantic-settings = "^2.0.0"
+streamlit = "^1.37.0"
+matplotlib = "^3.10.7"
+grpcio = "^1.76.0"
+grpcio-tools = "^1.76.0"
+
 
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.6.0"
+pytest = "^8.0.0"
 
 [build-system]
 requires = ["poetry-core"]
