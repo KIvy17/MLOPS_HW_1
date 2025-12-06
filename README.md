@@ -1,148 +1,353 @@
 # ML Service Homework 1
 
-REST API для управления ML-моделями с JWT аутентификацией.
+Сервис для обучения и использования ML‑моделей с REST API, HTTP Basic аутентификацией, gRPC‑сервисом и Streamlit‑дашбордом.
 
-## Состав группы
+## 📦 Основные компоненты
 
-* Ковалёнок И.
-* Асташкин А.
+- **FastAPI** REST API (`app/main.py`, `app/api.py`)
+- **HTTP Basic Auth** (`app/auth.py`)
+- **Менеджер моделей** с сохранением на диск (`app/models_manager.py`)
+- **Конфигурация и логирование** (`app/config.py`, `app/logger.py`)
+- **gRPC‑сервис** для работы с моделями (`app/gprc_service/`)
+- **Streamlit‑дашборд** для взаимодействия с API (`app/dashboard/app.py`)
+- **Docker** + `docker-compose` для развёртывания
 
-## Описание
+Модели: `LogisticRegression`, `RandomForestClassifier` (scikit‑learn).
 
-REST API сервис для обучения и использования ML-моделей (LogisticRegression, RandomForestClassifier) с защитой эндпоинтов через JWT токены.
+---
 
-## Требования
+## 🧱 Структура проекта
+
+```text
+MLOPS_HW_1-updated_hw1/
+├── app/
+│   ├── main.py              # Точка входа FastAPI-приложения
+│   ├── api.py               # REST эндпоинты для работы с моделями
+│   ├── auth.py              # HTTP Basic аутентификация
+│   ├── config.py            # Настройки и каталог для моделей
+│   ├── logger.py            # Настройка логгера
+│   ├── schemas.py           # Pydantic-схемы запросов/ответов
+│   ├── models_manager.py    # Обучение, сохранение, загрузка моделей
+│   ├── dashboard/
+│   │   └── app.py           # Streamlit-дашборд
+│   └── gprc_service/
+│       ├── server.py        # gRPC сервер
+│       ├── client.py        # gRPC клиент-пример
+│       ├── model_service.proto
+│       ├── model_service_pb2.py
+│       └── model_service_pb2_grpc.py
+├── data_examples/
+│   ├── postman_collection.json  # Коллекция запросов для Postman
+│   ├── train_example.json       # Пример данных для обучения
+│   └── predict_example.json     # Пример данных для предсказаний
+├── Dockerfile
+├── docker-compose.yml
+├── pyproject.toml
+└── README.md
+```
+
+---
+
+## ⚙️ Зависимости
+
+Указываются в `pyproject.toml` (Poetry):
 
 - Python 3.10+
-- pip
+- fastapi, uvicorn
+- scikit-learn
+- pydantic, pydantic-settings
+- streamlit, matplotlib
+- grpcio, grpcio-tools
+- pytest (dev)
 
-## Установка и запуск
+---
 
-### Шаг 1: Клонирование
-```bash
-git clone https://github.com/KIvy17/MLOPS_HW_1.git
-cd MLOPS_HW_1
-git checkout dev
-```
+## 🚀 Запуск сервиса (локально)
 
-### Шаг 2: Установка зависимостей
-```bash
-python -m venv venv
-# Windows:
-venv\Scripts\activate
-# Linux/Mac:
-source venv/bin/activate
-
-pip install fastapi uvicorn scikit-learn pandas pydantic loguru pyjwt
-```
-
-### Шаг 3: Запуск
-```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000
-```
-
-## Проверка
+### 1. Установка зависимостей
 
 ```bash
-curl http://127.0.0.1:8000/health
+pip install poetry
+poetry install
 ```
 
-Swagger документация: http://127.0.0.1:8000/docs
+### 2. Запуск REST API (FastAPI)
 
-## JWT Аутентификация
-
-Все эндпоинты (кроме `/health` и `/token`) требуют JWT токен.
-
-### Получение токена:
 ```bash
-curl -X POST "http://127.0.0.1:8000/token?username=admin&password=password"
+poetry run uvicorn app.main:app --reload --port 8000
 ```
 
-Ответ:
+По умолчанию будут доступны:
+
+- Health-check: `GET http://127.0.0.1:8000/health`
+- Документация Swagger: `http://127.0.0.1:8000/docs`
+
+### 3. Запуск Streamlit‑дашборда
+
+```bash
+poetry run streamlit run app/dashboard/app.py
+```
+
+> Базовый URL API в дашборде задаётся константой `API_URL` в `app/dashboard/app.py`
+> (по умолчанию `http://127.0.0.1:8001`). При необходимости его можно поменять на `http://127.0.0.1:8000`.
+
+---
+
+## 🔐 Аутентификация
+
+Все основные эндпоинты (`/api/...`) защищены через **HTTP Basic Auth**:
+
+Файл: `app/auth.py`
+
+```python
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+
+def authenticate(creds: HTTPBasicCredentials = Depends(security)):
+    if creds.username == "admin" and creds.password == "admin":
+        return True
+    raise HTTPException(status_code=401, detail="Unauthorized")
+```
+
+По умолчанию:
+- **username**: `admin`
+- **password**: `admin`
+
+Эти значения можно поменять в `auth.py`.
+
+---
+
+## 🌐 REST API
+
+Базовый префикс: `/api` (см. `app/main.py` и `app/api.py`).
+
+### 1. Health-check
+
+```http
+GET /health
+```
+
+**Ответ:**
+
 ```json
 {
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "token_type": "bearer"
+  "message": "OK"
 }
 ```
 
-### Использование токена:
-```bash
-curl -H "Authorization: Bearer YOUR_TOKEN" http://127.0.0.1:8000/models
+### 2. Список обученных моделей
+
+```http
+GET /api/models
 ```
 
-## API Эндпоинты
+Требует Basic Auth.
 
-- `GET /health` - проверка статуса сервиса (без токена)
-- `POST /token` - получение JWT токена (без токена)
-- `GET /models` - список доступных моделей (требует токен)
-- `POST /train` - обучение модели (требует токен)
-- `POST /predict/{model_id}` - предсказание (требует токен)
-- `DELETE /delete/{model_id}` - удаление модели (требует токен)
+**Ответ:**
 
-## Примеры использования
-
-### 1. Получить токен
-```bash
-curl -X POST "http://127.0.0.1:8000/token?username=admin&password=password"
+```json
+{
+  "models": [
+    "e7f1a9a2-...",
+    "b3c5d8e1-..."
+  ]
+}
 ```
 
-### 2. Список моделей
-```bash
-curl -H "Authorization: Bearer YOUR_TOKEN" http://127.0.0.1:8000/models
+---
+
+### 3. Обучение модели
+
+Эндпоинт:  
+
+```http
+POST /api/train
 ```
 
-### 3. Обучить модель
-```bash
-curl -X POST http://127.0.0.1:8000/train \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d @data_examples/train_example.json
+Требует Basic Auth.
+
+Схема запроса (`TrainRequest` из `schemas.py`):
+
+```json
+{
+  "train": [
+    [1.0, 2.0],
+    [2.0, 3.0],
+    [3.0, 4.0]
+  ],
+  "target": [0, 1, 0],
+  "model_type": "LogisticRegression"
+}
 ```
+
+`model_type` — один из:
+
+- `"LogisticRegression"`
+- `"RandomForestClassifier"`
+
+**Успешный ответ:**
+
+```json
+{
+  "model_id": "e7f1a9a2-1234-5678-90ab-abcdefabcdef"
+}
+```
+
+ID модели используется дальше для предсказаний и удаления.
+
+---
 
 ### 4. Предсказание
+
+```http
+POST /api/predict/{model_id}
+```
+
+Требует Basic Auth.
+
+Схема запроса (`PredictRequest`):
+
+```json
+{
+  "data": [
+    [2.0, 3.0],
+    [3.0, 5.0]
+  ]
+}
+```
+
+**Ответ:**
+
+```json
+{
+  "predictions": [0, 1]
+}
+```
+
+---
+
+### 5. Удаление модели
+
+```http
+DELETE /api/delete/{model_id}
+```
+
+Требует Basic Auth.
+
+**Успешный ответ:**
+
+```json
+{
+  "message": "deleted"
+}
+```
+
+При отсутствии модели: `404 Model not found`.
+
+---
+
+## 🧠 Менеджер моделей
+
+Файл: `app/models_manager.py`
+
+Основные функции:
+
+- `list_available_models()` — возвращает список доступных типов моделей (`AVAILABLE_MODELS`)
+- `train_model(train, target, model_type)` — обучает модель и сохраняет её на диск в каталог `settings.MODELS_DIR`
+- `load_model(model_id)` — загружает модель по ID
+- `predict(model_id, data)` — делает предсказание и возвращает список значений
+- `delete_model(model_id)` — удаляет сохранённую модель по ID
+
+Каталог для моделей задаётся в `app/config.py`:
+
+```python
+class Settings(BaseSettings):
+    MODELS_DIR: str = "models"
+```
+
+При необходимости можно переопределить через переменные окружения или `.env`.
+
+---
+
+## 🛰 gRPC‑сервис
+
+Директория: `app/gprc_service/`
+
+Файлы:
+
+- `model_service.proto` — описание сервиса
+- `model_service_pb2.py`, `model_service_pb2_grpc.py` — сгенерированный код
+- `server.py` — gRPC‑сервер
+- `client.py` — пример клиента
+
+Основной сервис: `ModelService` с методами:
+
+- `ListModels(Empty) -> ModelList`
+- `TrainModel(TrainRequest) -> TrainResponse`
+- `Predict(PredictRequest) -> PredictResponse`
+- `DeleteModel(DeleteRequest) -> DeleteResponse`
+
+### Запуск gRPC‑сервера
+
 ```bash
-curl -X POST http://127.0.0.1:8000/predict/MODEL_ID \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d @data_examples/predict_example.json
+python app/gprc_service/server.py
 ```
 
-## Примеры данных
+По умолчанию сервер слушает порт `50051`.
 
-В папке `data_examples/` находятся примеры JSON для обучения и предсказания.
+### Пример клиента
 
-# Streamlit
-streamlit run app/dashboard/app.py
-## gRPC
-1) Сгенерировать Python-код из .proto (один раз):
-python -m grpc_tools.protoc -I app/grpc_service       --python_out=app/grpc_service       --grpc_python_out=app/grpc_service       app/grpc_service/model_service.proto
-2) Запустить сервер:
-python -m app.grpc_service.server
-3) Клиент (пример):
-python -m app.grpc_service.client
-## Docker
+```bash
+python app/gprc_service/client.py
+```
+
+Клиент подключается к `localhost:50051` и запрашивает список доступных типов моделей.
+
+---
+
+## 📊 Streamlit‑дашборд
+
+Файл: `app/dashboard/app.py`
+
+Функциональность:
+
+- форма авторизации (HTTP Basic)
+- проверка `/health`
+- обучение модели через `/api/train`
+- просмотр списка моделей `/api/models`
+- получение предсказаний `/api/predict/{model_id}`
+- удаление модели `/api/delete/{model_id}`
+- вывод таблиц и простых графиков (matplotlib)
+
+Запуск:
+
+```bash
+poetry run streamlit run app/dashboard/app.py
+```
+
+---
+
+## 🐳 Запуск через Docker
+
+### 1. Сборка и запуск всех сервисов
+
+```bash
 docker-compose up --build
-Доступ:
-- API: http://localhost:8000/health
-- Dashboard: http://localhost:8501
-
-
-## Структура проекта
-
-```
-├── app/
-│   ├── main.py              # FastAPI приложение с JWT
-│   ├── auth.py              # JWT аутентификация
-│   ├── models_manager.py    # Менеджер ML моделей
-│   ├── logger.py            # Логирование
-│   └── schemas.py           # Pydantic схемы
-├── data_examples/           # Примеры данных
-└── pyproject.toml           # Зависимости
 ```
 
-## Примечание
+Файл `docker-compose.yml` поднимает:
 
-Текущая версия включает базовый REST API и JWT аутентификацию (Ковалёнок И.). 
-Дополнительные компоненты (gRPC, Streamlit, Docker) добавлены (Асташикн А.)
+- `api` — FastAPI на порту `8000`
+- `dashboard` — Streamlit на порту `8501`
 
+Каталог `./models` монтируется внутрь контейнера как `/app/models` для сохранения обученных моделей.
+
+---
+
+## 📎 Полезное
+
+- Примеры запросов лежат в `data_examples/`:
+  - `train_example.json`
+  - `predict_example.json`
+  - `postman_collection.json` — готовая коллекция для Postman
+- Конфигурация пути к моделям — в `app/config.py`
+- Логи пишутся через `app/logger.py` в стандартный вывод (StreamHandler)
