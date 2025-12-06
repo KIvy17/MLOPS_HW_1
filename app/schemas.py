@@ -1,14 +1,14 @@
+
 from pydantic import BaseModel
-from typing import List, Any, Dict
+from typing import List
 
 class TrainRequest(BaseModel):
+    train: List[List[float]]
+    target: List[int]
     model_type: str
-    X: List[List[float]]
-    y: List[int]
-    params: Dict[str, Any] = {}
 
 class PredictRequest(BaseModel):
-    X: List[List[float]]
+    data: List[List[float]]
 
 class Message(BaseModel):
     message: str
