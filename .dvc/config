@@ -1,0 +1,10 @@
+[core]
+	repo = true
+	remote = minio
+
+['remote "minio"']
+	url = s3://mlops-hw2-dvc
+	endpointurl = http://minio:9000
+	access_key_id = minio
+	secret_access_key = minio12345
+	use_ssl = false

@@ -1,0 +1,3 @@
+outs:
+- path: data
+  persist: true
