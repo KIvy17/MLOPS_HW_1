@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, Depends, HTTPException
 from app.schemas import TrainRequest, PredictRequest, Message
 from app.models_manager import train_model, predict, delete_model, list_trained_models
