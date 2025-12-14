@@ -1,14 +1,15 @@
-
 from fastapi import APIRouter, Depends, HTTPException
-from app.schemas import TrainRequest, PredictRequest, Message
+from app.schemas import TrainRequest, PredictRequest
 from app.models_manager import train_model, predict, delete_model, list_trained_models
 from app.auth import authenticate
 
 router = APIRouter()
 
+
 @router.get("/models", dependencies=[Depends(authenticate)])
 async def models_list():
     return {"models": list_trained_models()}
+
 
 @router.post("/train", dependencies=[Depends(authenticate)])
 async def train(req: TrainRequest):
@@ -18,6 +19,7 @@ async def train(req: TrainRequest):
     except Exception as e:
         raise HTTPException(400, str(e))
 
+
 @router.post("/predict/{model_id}", dependencies=[Depends(authenticate)])
 async def do_predict(model_id: str, req: PredictRequest):
     try:
@@ -25,6 +27,7 @@ async def do_predict(model_id: str, req: PredictRequest):
         return {"predictions": preds}
     except Exception as e:
         raise HTTPException(400, str(e))
+
 
 @router.delete("/delete/{model_id}", dependencies=[Depends(authenticate)])
 async def delete(model_id: str):

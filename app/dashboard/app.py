@@ -19,7 +19,13 @@ AUTH = HTTPBasicAuth(username, password)
 st.sidebar.header("📌 Меню")
 page = st.sidebar.radio(
     "Выберите раздел:",
-    ["Проверка сервиса", "Список моделей", "Обучить модель", "Предсказать", "Удалить модель"]
+    [
+        "Проверка сервиса",
+        "Список моделей",
+        "Обучить модель",
+        "Предсказать",
+        "Удалить модель",
+    ],
 )
 
 # -------------------- HEALTH --------------------
@@ -44,8 +50,7 @@ elif page == "Обучить модель":
     st.subheader("📚 Обучение модели")
 
     model_type = st.selectbox(
-        "Тип модели:",
-        ["LogisticRegression", "RandomForestClassifier"]
+        "Тип модели:", ["LogisticRegression", "RandomForestClassifier"]
     )
 
     uploaded_file = st.file_uploader("Загрузите CSV с данными", type=["csv"])
@@ -56,7 +61,7 @@ elif page == "Обучить модель":
         st.dataframe(df)
 
         target_col = st.selectbox("Выберите колонку target:", df.columns)
-        
+
         # Графики
         st.write("📉 Распределение target:")
         fig, ax = plt.subplots()
@@ -77,20 +82,19 @@ elif page == "Обучить модель":
         elif model_type == "RandomForestClassifier":
             n_estimators = st.slider("n_estimators", 10, 500, 100)
             max_depth = st.slider("max_depth", 1, 50, 10)
-            hyperparams = {"n_estimators": int(n_estimators), "max_depth": int(max_depth)}
+            hyperparams = {
+                "n_estimators": int(n_estimators),
+                "max_depth": int(max_depth),
+            }
 
         if st.button("🚀 Обучить модель"):
             payload = {
                 "train": X.values.tolist(),
                 "target": y.values.tolist(),
                 "model_type": model_type,
-                "hyperparams": hyperparams
+                "hyperparams": hyperparams,
             }
-            resp = requests.post(
-                f"{API_URL}/api/train",
-                json=payload,
-                auth=AUTH
-            )
+            resp = requests.post(f"{API_URL}/api/train", json=payload, auth=AUTH)
             st.write(resp.json())
 
 # -------------------- PREDICT --------------------
@@ -109,9 +113,7 @@ elif page == "Предсказать":
         if st.button("Сделать предсказание"):
             payload = {"data": df.values.tolist()}
             resp = requests.post(
-                f"{API_URL}/api/predict/{model_id}",
-                json=payload,
-                auth=AUTH
+                f"{API_URL}/api/predict/{model_id}", json=payload, auth=AUTH
             )
             result = resp.json()
             preds = result.get("predictions", [])
@@ -128,4 +130,3 @@ elif page == "Удалить модель":
     if st.button("Удалить"):
         resp = requests.delete(f"{API_URL}/api/delete/{model_id}", auth=AUTH)
         st.write(resp.json())
-

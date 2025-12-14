@@ -22,7 +22,11 @@ AVAILABLE_MODELS = {
 
 def _get_s3_client() -> Optional["boto3.client"]:
     """Create S3/Minio client if configuration is provided."""
-    if not settings.S3_ENDPOINT_URL or not settings.S3_ACCESS_KEY_ID or not settings.S3_SECRET_ACCESS_KEY:
+    if (
+        not settings.S3_ENDPOINT_URL
+        or not settings.S3_ACCESS_KEY_ID
+        or not settings.S3_SECRET_ACCESS_KEY
+    ):
         return None
 
     return boto3.client(
@@ -121,7 +125,9 @@ def train_model(train: List[List[float]], target: List[int], model_type: str) ->
 def list_trained_models() -> List[str]:
     """List locally stored models by ID."""
     ensure_model_dir()
-    return [f.split(".")[0] for f in os.listdir(settings.MODELS_DIR) if f.endswith(".pkl")]
+    return [
+        f.split(".")[0] for f in os.listdir(settings.MODELS_DIR) if f.endswith(".pkl")
+    ]
 
 
 def predict(model_id: str, data: List[List[float]]) -> List[Any]:

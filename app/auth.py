@@ -1,8 +1,8 @@
-
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
-security=HTTPBasic()
+security = HTTPBasic()
+
 
 def authenticate(creds: HTTPBasicCredentials = Depends(security)):
     if creds.username == "admin" and creds.password == "admin":
